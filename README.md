@@ -16,9 +16,9 @@ _class:
  - invert
 -->
 
-# 週 6 稼働 4 ヶ月を支えた神ツール 5 選
+# Deno KV で超速プロダクト開発
 
-週 6 はよくない
+Deno の歴史がまた 1 ページ
 
 ## 自己紹介（Twitter: @taroosg）
 
