@@ -6,7 +6,7 @@ marp: true
 theme: gaia
 class:
  - invert
-headingDivider: 2 
+headingDivider: 2
 paginate: true
 -->
 
@@ -16,118 +16,122 @@ _class:
  - invert
 -->
 
-# Deploy Marp to GitHub Pages
+# 週 6 稼働 4 ヶ月を支えた神ツール 5 選
 
-Presentations to Webpages: Instantly!
+週 6 はよくない
 
-## What?
+## 自己紹介（Twitter: @taroosg）
 
-[Marp](https://marp.app/) lets you create HTML slides from markdown (like this!).
-
-This presentation is both a [website](https://alexsci.com/marp-to-pages) and a [README.md](https://github.com/ralexander-phi/marp-to-pages/blob/main/README.md).
-
-## Why?
-
-Treat your presentation the same way you treat code.
-
-- Use git to track changes
-- Pull requests to collaborate
-- Deploy automatically
-- See a problem? Open an issue!
-
-## Setup
-
-Want to create your own?
-
-First, create a new repo [from the template repo](https://github.com/ralexander-phi/marp-to-pages).
-
-![](img/use-template.png)
-
-## Configure GitHub Pages
-
-Open your new repo and [setup publishing](https://help.github.com/en/github/working-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#choosing-a-publishing-source).
-
-You'll typically use `gh-pages` as the deploy branch.
-
-## Review Build
-
-Click on Actions tab and see if the build succeeded (it may take some time).
-
-![](img/click-actions.png)
-
-You should now see the generated files in the `gh-pages` branch.
-
-## View webpage
-
-Open your deployed webpage to see the content.
-
-Out of the box you should see `README.md` as `/index.html` and `/README.pdf`. Slides under `docs/` are also converted.
-
-## Running locally
-
-Locally you'll run commands like:
-
-```
-$ marp README.md -o build/README.pdf
+```json
+{
+  "name": "Taro Ohsugi",
+  "works": [
+    {
+      "work": "🎓 G's ACADEMY FUKUOKA 主任講師",
+      "skills": ["JavaScript", "React", "PHP", "Laravel"]
+    },
+    {
+      "work": "🎓 エンジニア",
+      "skills": ["Laravel", "JavaScript", "画面設計", "DB設計"]
+    }
+  ],
+  "like": ["💻", "📚", "🛩️ 🚌 🚅 🚃", "🥃 🍷 🍺", "🚮"]
+}
 ```
 
-or
+## 概要
 
-```
-$ npx @marp-team/marp-cli@latest README.md -o build/README.pdf
-```
+本記事では下記を述べる．
 
-## As a workflow step
+- Deno KV がすごい．
+- Deno KV がすごい．
+- Deno KV がすごい．
 
-The workflow runs an equivalent step:
+## 背景
 
-```
-- name: Marp Build (README.pdf)
-  uses: docker://marpteam/marp-cli:v1.7.0
-  with:
-    args: README.md -o build/README.pdf
-  env:
-    MARP_USER: root:root
-```
+個人開発で業務ツールとか作る．
 
-Note the `args` match the previous slide.
+- DB どうする？
+- デプロイ先どうする？
+- お財布どうする？
 
-## Customizing the build
+## Deno はすべてを解決する
 
-Anything in the `build/` folder will be deployed to GitHub Pages.
+![](img/deno-looking-up.svg)
 
-You can copy extra files or run further processing steps using other tools.
-
-## Learn more about Marp
-
-This is a good time to learn more about Marp. Here's some resources:
-
-- [CommonMark](https://commonmark.org/)
-- [Cheat Sheet](https://commonmark.org/help/)
-- [Themes](https://github.com/marp-team/marp-core/tree/master/themes)
-- [CSS Themes](https://marpit.marp.app/theme-css)
-- [Directives](https://marpit.marp.app/directives)
-- [VS Code plugin](https://marketplace.visualstudio.com/items?itemName=marp-team.marp-vscode)
-
-## Example Sites
-
-Known sites using this action are:
-
-- [University of Illinois at Urbana-Champaign's CS 199 Even More Practice](https://cs199emp.netlify.app/) [(code)](https://github.com/harsh183/emp-125)
-- [Exploring agent based models](https://roiarthurb.github.io/Talk-UMMISCO_06-07-2020/) [(code)](https://github.com/RoiArthurB/Talk-UMMISCO_06-07-2020)
-
-Send a [pull request](https://github.com/ralexander-phi/marp-to-pages) to get your site added.
-
-## Publish your slides
-
-When you are ready to share your presentation, commit or merge to `main` and your content on GitHub Pages will automatically update.
-
-# 🎉
 <!--
 _class:
  - lead
  - invert
 -->
-### Hooray!
 
+## Deno はすべてを解決する
 
+- Fresh（Web フレームワーク）
+- **Deno KV（kv ストレージ）**
+- Deno Deploy（デプロイ）
+
+## Deno KV とは
+
+Deno で使用できる key-value ストレージ．ローカルで実行する場合は Deno KV は SQLite で動作し，アプリケーションを Deno Deploy にデプロイすると Deno KV データベースは自動的に FoundationDB によって動作する．
+
+## 今回のお題
+
+「X」みたいなアプリケーション「Twitter」を実装してデプロイしてみる．
+
+## 例（DB 接続）
+
+```ts
+const kv = await Deno.openKv();
+```
+
+## 例
+
+フォームから送信されたデータを保存．
+
+```ts
+// データの受け取りと取り出し
+const formData = await req.formData();
+const name = formData.get("name")?.toString();
+const tweet = formData.get("tweet")?.toString();
+// 登録処理
+const kv = await Deno.openKv();
+await kv.set(["tweets", Date.now()], {
+  tweet,
+  name,
+});
+```
+
+## 例（データの参照）
+
+キー指定して 100 件取得．
+
+```ts
+const iter = await kv.list({ prefix: ["tweets"] }, { limit: 100 });
+const tweets = [];
+for await (const res of iter) {
+  tweets.unshift(res.value);
+}
+```
+
+## デモ
+
+1. コードの紹介
+2. ローカルでの動作確認
+3. デプロイして動作確認
+
+## まとめ
+
+- とにかく簡単で現時点ではコストも考えなくて良い．
+- 業務ツールや簡単なアプリケーションの開発 → デプロイ → 運用の流れが超速．
+- ベータ版であるため API 仕様の変更や機能の追加削除などは注意．
+
+## Enjoy!
+
+<!--
+_class:
+ - lead
+ - invert
+-->
+
+![](img/lemon-squash.svg)
